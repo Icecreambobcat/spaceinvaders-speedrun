@@ -17,10 +17,7 @@ from pygame import (
     time,
 )
 
-from conf import Conf
 from lib import GameState
-from states.menu import Menu
-from states.game import Game
 
 
 class App:
@@ -40,15 +37,21 @@ class App:
         Initialise internal variables and pulls in configs from the config file
         """
 
+        from conf import Conf
+        from states.menu import Menu
+        from states.game import Game
+
         pg.init()
         App.conf = Conf.configs
         App.screen = display.set_mode(
             size=(App.conf["screen"]["width"], App.conf["screen"]["height"]), vsync=1
         )
         App.clock = time.Clock()
+        menu = Menu()
+        game = Game()
         App.states = {
-            "Menu": Menu(),
-            "Game": Game(),
+            "Menu": menu,
+            "Game": game,
         }
         App.ctx = "Menu"
 
@@ -62,15 +65,20 @@ class App:
         while ingame:
             match App.ctx:
                 case "Menu":
-                    pass
+                    out = App.states["Menu"].loop()
+                    if out:
+                        App.ctx = "Game"
+                    else:
+                        break
                 case "Ingame":
                     pass
 
             display.flip()
-            App.clock.tick_busy_loop(120)
-        for event in pg.event.get():
-            if event.type == pg.QUIT:
-                App.quit_app()
+            App.clock.tick(120)
+            for event in pg.event.get():
+                if event.type == pg.QUIT:
+                    App.quit_app()
+
         App.quit_app()
 
     @staticmethod
