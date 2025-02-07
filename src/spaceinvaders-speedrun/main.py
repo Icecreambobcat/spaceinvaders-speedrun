@@ -1,4 +1,5 @@
-import pathlib, os, sys
+import pathlib, os, sys, asyncio
+from pathlib import Path
 from abc import abstractmethod, ABC
 from typing import Never
 import pygame as pg
@@ -30,6 +31,7 @@ class App:
     font12: font.Font
     conf: dict
     states: dict[str, GameState]
+    asset_path: Path
 
     @staticmethod
     def init_game() -> None:
@@ -43,16 +45,27 @@ class App:
 
         pg.init()
         App.conf = Conf.configs
+        App.asset_path = Path(".", "assets")
         App.screen = display.set_mode(
             size=(App.conf["screen"]["width"], App.conf["screen"]["height"]), vsync=1
         )
         App.clock = time.Clock()
-        menu = Menu()
-        game = Game()
         App.states = {
-            "Menu": menu,
-            "Game": game,
+            "Menu": Menu(),
+            "Game": Game(),
         }
+        App.font72 = font.Font(
+            App.asset_path.joinpath("JetBrainsMonoNerdFont-Regular.ttf"), 72
+        )
+        App.font32 = font.Font(
+            App.asset_path.joinpath("JetBrainsMonoNerdFont-Regular.ttf"), 32
+        )
+        App.font24 = font.Font(
+            App.asset_path.joinpath("JetBrainsMonoNerdFont-Regular.ttf"), 24
+        )
+        App.font12 = font.Font(
+            App.asset_path.joinpath("JetBrainsMonoNerdFont-Regular.ttf"), 12
+        )
         App.ctx = "Menu"
 
     @staticmethod
@@ -71,7 +84,11 @@ class App:
                     else:
                         break
                 case "Ingame":
-                    pass
+                    out = App.states["Game"].loop()
+                    if out:
+                        App.ctx = "Game"
+                    else:
+                        App.ctx = "Menu"
 
             display.flip()
             App.clock.tick(120)
