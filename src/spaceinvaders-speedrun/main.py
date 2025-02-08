@@ -1,10 +1,10 @@
-import pathlib, os, sys, asyncio
+import pathlib, os, sys
 from pathlib import Path
 from abc import abstractmethod, ABC
 from typing import Never
 import pygame as pg
 from pygame import (
-    color,
+    Color,
     display,
     event,
     font,
@@ -45,7 +45,7 @@ class App:
 
         pg.init()
         App.conf = Conf.configs
-        App.asset_path = Path(".", "assets")
+        App.asset_path = Path("assets")
         App.screen = display.set_mode(
             size=(App.conf["screen"]["width"], App.conf["screen"]["height"]), vsync=1
         )

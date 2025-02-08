@@ -1,9 +1,9 @@
-import pathlib, os, sys, asyncio
+import pathlib, os, sys
 from abc import abstractmethod, ABC
-from typing import Never
+from typing import Callable, List, Never, Tuple
 import pygame as pg
 from pygame import (
-    color,
+    Color,
     display,
     event,
     font,
@@ -21,39 +21,76 @@ from lib import GameState
 
 
 class Menu(GameState):
-    font72: font.Font
-    font32: font.Font
-    font24: font.Font
-    font12: font.Font
     bg: Surface
+    screen: Surface
+    menu_text: List[Tuple[Surface, Rect]]
+    clock: time.Clock
+    quit_call: Callable
 
     def __init__(self) -> None:
         from main import App
 
-        self.font72 = App.font72
-        self.font32 = App.font32
-        self.font24 = App.font24
-        self.font12 = App.font12
-
         tmp = image.load(App.asset_path.joinpath("menu_bg_tex.jpg"))
+        self.screen = App.screen
+        self.clock = App.clock
+        self.quit_call = App.quit_app
         self.bg = pg.transform.scale(
             tmp, (App.conf["screen"]["width"], App.conf["screen"]["height"])
         )
-        del tmp
+        text_line_1 = App.font72.render(
+            "The game you made me make", True, (255, 255, 255)
+        )
+        text_line_2 = App.font24.render("<CR> to next, <ESC> to exit", True, (255, 255, 255))
+        text_line_3 = App.font32.render("TODO: You (*･ω･)ﾉ", True, (255, 255, 255))
+        self.menu_text = [
+            (
+                text_line_1,
+                text_line_1.get_rect(center=(App.conf["screen"]["width"] / 2, 100)),
+            ),
+            (
+                text_line_2,
+                text_line_2.get_rect(center=(App.conf["screen"]["width"] / 2, 175)),
+            ),
+            (
+                text_line_3,
+                text_line_3.get_rect(center=(App.conf["screen"]["width"] / 2, 250)),
+            ),
+        ]
 
     def loop(self) -> bool:
+        quit = False
+        while True:
+            for event in pg.event.get(pg.QUIT):
+                if event.type == pg.QUIT:
+                    self.quit_call()
+            self.render()
+            keys = self.grab_input()
+            for keypress in keys:
+                if keypress.key == pg.K_RETURN:
+                    return True
+                elif keypress.key == pg.K_ESCAPE:
+                    quit = True
+            if quit:
+                self.cleanup()
+                break
+
+            display.flip()
+            self.clock.tick(120)
+
         return False
 
-    async def cleanup(self) -> None:
+    def cleanup(self) -> None:
         # kill all menu objects to ensure clean frame transition
-        # non blocking
         pass
 
     def render(self) -> None:
-        # render the menu, blocking call
-        pass
+        self.screen.blit(self.bg, (0, 0))
+        for text in self.menu_text:
+            self.screen.blit(text[0], text[1])
 
-    async def grab_input(self) -> list:
+    def grab_input(self) -> list:
         # read key events and tell the loop to return true/false
-        # returns a list of key events nicely formatted
-        return []
+        # nukes the other events because they're useless
+        keys = event.get(pg.KEYDOWN)
+        _ = event.get()
+        return keys

@@ -1,9 +1,9 @@
-import pathlib, os, sys, asyncio
+import pathlib, os, sys
 from abc import abstractmethod, ABC
 from typing import Never
 import pygame as pg
 from pygame import (
-    color,
+    Color,
     display,
     event,
     font,
@@ -24,7 +24,7 @@ class GameState(ABC):
         pass
 
     @abstractmethod
-    async def cleanup(self) -> None:
+    def cleanup(self) -> None:
         pass
 
     @abstractmethod
