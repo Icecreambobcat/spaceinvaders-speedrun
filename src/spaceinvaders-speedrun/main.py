@@ -1,7 +1,7 @@
 import pathlib, os, sys
 from pathlib import Path
 from abc import abstractmethod, ABC
-from typing import Never
+from typing import Dict, Never
 import pygame as pg
 from pygame import (
     Color,
@@ -29,6 +29,7 @@ class App:
     font32: font.Font
     font24: font.Font
     font12: font.Font
+    fonts: Dict[str, font.Font]
     conf: dict
     states: dict[str, GameState]
     asset_path: Path
@@ -45,15 +46,11 @@ class App:
 
         pg.init()
         App.conf = Conf.configs
-        App.asset_path = Path("assets")
+        App.asset_path = Path("src", "assets")
         App.screen = display.set_mode(
             size=(App.conf["screen"]["width"], App.conf["screen"]["height"]), vsync=1
         )
         App.clock = time.Clock()
-        App.states = {
-            "Menu": Menu(),
-            "Game": Game(),
-        }
         App.font72 = font.Font(
             App.asset_path.joinpath("JetBrainsMonoNerdFont-Regular.ttf"), 72
         )
@@ -66,7 +63,17 @@ class App:
         App.font12 = font.Font(
             App.asset_path.joinpath("JetBrainsMonoNerdFont-Regular.ttf"), 12
         )
+        App.fonts = {
+            "72": App.font72,
+            "32": App.font32,
+            "24": App.font24,
+            "12": App.font12,
+        }
         App.ctx = "Menu"
+        App.states = {
+            "Menu": Menu(App.screen, App.clock, App.asset_path, App.conf, App.fonts),
+            # "Game": Game(),
+        }
 
     @staticmethod
     def run_game() -> Never:

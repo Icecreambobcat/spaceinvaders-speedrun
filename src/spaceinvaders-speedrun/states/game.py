@@ -17,6 +17,7 @@ from pygame import (
     time,
 )
 
+sys.path.insert(0, str(pathlib.Path(__file__).parent.parent.absolute()))
 from lib import GameState, object
 
 

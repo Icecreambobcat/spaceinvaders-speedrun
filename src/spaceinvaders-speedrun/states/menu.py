@@ -1,6 +1,6 @@
 import pathlib, os, sys
 from abc import abstractmethod, ABC
-from typing import Callable, List, Never, Tuple
+from typing import Callable, Dict, List, Never, Tuple
 import pygame as pg
 from pygame import (
     Color,
@@ -17,7 +17,9 @@ from pygame import (
     time,
 )
 
+sys.path.insert(0, str(pathlib.Path(__file__).parent.parent.absolute()))
 from lib import GameState
+from pathlib import Path
 
 
 class Menu(GameState):
@@ -26,61 +28,95 @@ class Menu(GameState):
     menu_text: List[Tuple[Surface, Rect]]
     clock: time.Clock
     quit_call: Callable
+    conf: Dict
+    path: Path
+    fonts: Dict
 
-    def __init__(self) -> None:
+    def __init__(
+        self,
+        screen: Surface,
+        clock: time.Clock,
+        path: Path,
+        conf: Dict,
+        fonts: Dict[str, font.Font],
+    ) -> None:
         from main import App
 
-        tmp = image.load(App.asset_path.joinpath("menu_bg_tex.jpg"))
-        self.screen = App.screen
-        self.clock = App.clock
+        self.path = path
+        self.screen = screen
+        self.clock = clock
+        self.conf = conf
+        self.fonts = fonts
         self.quit_call = App.quit_app
+
+        img = image.load(self.path.joinpath("menu_bg_tex.jpg"))
         self.bg = pg.transform.scale(
-            tmp, (App.conf["screen"]["width"], App.conf["screen"]["height"])
+            img, (self.conf["screen"]["width"], self.conf["screen"]["height"])
         )
-        text_line_1 = App.font72.render(
+        text_line_1 = self.fonts["72"].render(
             "The game you made me make", True, (255, 255, 255)
         )
-        text_line_2 = App.font24.render("<CR> to next, <ESC> to exit", True, (255, 255, 255))
-        text_line_3 = App.font32.render("TODO: You (*･ω･)ﾉ", True, (255, 255, 255))
+        text_line_2 = self.fonts["24"].render(
+            "<CR> to next, <ESC> to exit", True, (255, 255, 255)
+        )
+        text_line_3 = self.fonts["24"].render(
+            "TODO: You (*･ω･)ﾉ", True, (255, 255, 255)
+        )
         self.menu_text = [
             (
                 text_line_1,
-                text_line_1.get_rect(center=(App.conf["screen"]["width"] / 2, 100)),
+                text_line_1.get_rect(center=(self.conf["screen"]["width"] / 2, 100)),
             ),
             (
                 text_line_2,
-                text_line_2.get_rect(center=(App.conf["screen"]["width"] / 2, 175)),
+                text_line_2.get_rect(center=(self.conf["screen"]["width"] / 2, 175)),
             ),
             (
                 text_line_3,
-                text_line_3.get_rect(center=(App.conf["screen"]["width"] / 2, 250)),
+                text_line_3.get_rect(center=(self.conf["screen"]["width"] / 2, 250)),
             ),
         ]
 
     def loop(self) -> bool:
-        quit = False
-        while True:
-            for event in pg.event.get(pg.QUIT):
-                if event.type == pg.QUIT:
-                    self.quit_call()
+        running = True
+        while running:
             self.render()
             keys = self.grab_input()
+
             for keypress in keys:
                 if keypress.key == pg.K_RETURN:
                     return True
                 elif keypress.key == pg.K_ESCAPE:
-                    quit = True
-            if quit:
-                self.cleanup()
-                break
+                    running = False
 
             display.flip()
             self.clock.tick(120)
 
+        self.cleanup()
         return False
+
+    # def loop(self) -> bool:
+    #     quit = False
+    #     while True:
+    #         self.render()
+    #         keys = self.grab_input()
+    #         for keypress in keys:
+    #             if keypress.key == pg.K_RETURN:
+    #                 return True
+    #             elif keypress.key == pg.K_ESCAPE:
+    #                 quit = True
+    #         if quit:
+    #             self.cleanup()
+    #             break
+    #
+    #         display.flip()
+    #         self.clock.tick(120)
+    #
+    #     return False
 
     def cleanup(self) -> None:
         # kill all menu objects to ensure clean frame transition
+        # placeholder implementation, will nuke if unnecessary
         pass
 
     def render(self) -> None:
