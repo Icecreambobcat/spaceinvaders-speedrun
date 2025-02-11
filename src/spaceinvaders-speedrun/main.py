@@ -72,7 +72,7 @@ class App:
         App.ctx = "Menu"
         App.states = {
             "Menu": Menu(App.screen, App.clock, App.asset_path, App.conf, App.fonts),
-            # "Game": Game(),
+            "Game": Game(App.screen, App.clock, App.asset_path, App.conf, App.fonts),
         }
 
     @staticmethod
