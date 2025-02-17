@@ -1,18 +1,12 @@
-import pathlib, os, sys
-from abc import abstractmethod, ABC
-from typing import Callable, Dict, List, Never, Tuple
+import pathlib, sys
+from typing import Callable, Dict, List, Tuple
 import pygame as pg
 from pygame import (
-    Color,
     display,
     event,
     font,
     image,
-    key,
-    mouse,
-    mixer,
     Rect,
-    sprite,
     Surface,
     time,
 )
@@ -95,29 +89,11 @@ class Menu(GameState):
         self.cleanup()
         return False
 
-    # def loop(self) -> bool:
-    #     quit = False
-    #     while True:
-    #         self.render()
-    #         keys = self.grab_input()
-    #         for keypress in keys:
-    #             if keypress.key == pg.K_RETURN:
-    #                 return True
-    #             elif keypress.key == pg.K_ESCAPE:
-    #                 quit = True
-    #         if quit:
-    #             self.cleanup()
-    #             break
-    #
-    #         display.flip()
-    #         self.clock.tick(120)
-    #
-    #     return False
-
     def cleanup(self) -> None:
         # kill all menu objects to ensure clean frame transition
         # placeholder implementation, will nuke if unnecessary
-        pass
+        self.screen.fill((0, 0, 0))
+        display.flip()
 
     def render(self) -> None:
         self.screen.blit(self.bg, (0, 0))
@@ -127,6 +103,10 @@ class Menu(GameState):
     def grab_input(self) -> list:
         # read key events and tell the loop to return true/false
         # nukes the other events because they're useless
-        keys = event.get(pg.KEYDOWN)
+        # takes care of quitting
+        keys = event.get(pg.KEYDOWN, pg.QUIT)
+        if pg.QUIT in keys:
+            self.cleanup()
+            self.quit_call()
         _ = event.get()
         return keys

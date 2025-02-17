@@ -32,7 +32,11 @@ class GameState(ABC):
         pass
 
 
-class object(ABC, sprite.Sprite):
+class GameSprite(ABC, sprite.Sprite):
+    """
+    Defines the basic structure of ingame sprite objects
+    """
+
     @property
     @abstractmethod
     def position(self) -> tuple[int, int]:
@@ -46,4 +50,9 @@ class object(ABC, sprite.Sprite):
     @property
     @abstractmethod
     def rect(self) -> Rect:
+        pass
+
+    @property
+    @abstractmethod
+    def health(self) -> int:
         pass
